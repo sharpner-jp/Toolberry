@@ -1136,7 +1136,7 @@
 
       // 入力チェック
       if (!url) {
-        showError("URLを入力してください。");
+        showError("Please enter the URL.");
         return;
       }
 
@@ -1149,7 +1149,7 @@
       try {
         new URL(url);
       } catch (err) {
-        showError("有効なURLを入力してください。");
+        showError("Please enter a valid URL.");
         return;
       }
 
@@ -1167,7 +1167,7 @@
         if (!res.ok) {
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError("URL短縮サービスに接続できませんでした。");
+          showError("Unable to connect to the URL shortening service.");
           return;
         }
 
@@ -1177,7 +1177,7 @@
         if (data.status !== 200 || !data.shorturl) {
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError("URLの短縮に失敗しました。有効なURLを入力してください。");
+          showError("URL shortening failed. Please enter a valid URL.");
           return;
         }
 
@@ -1202,9 +1202,9 @@
           submitBtn.disabled = false;
 
           if (fetchErr.name === 'AbortError') {
-            showError("接続がタイムアウトしました。もう一度お試しください。");
+            showError("The connection timed out. Please try again.");
           } else {
-            showError("ネットワークエラーが発生しました。接続を確認してください。");
+            showError("A network error has occurred. Please check your connection.");
           }
           return;
         }
@@ -1214,7 +1214,7 @@
           const errorText = await checkRes.text();
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError(errorText || "HTMLの取得に失敗しました。URLを確認してください。");
+          showError(errorText || "Failed to retrieve HTML. Please check the URL.");
           return;
         }
 
@@ -1247,7 +1247,7 @@
         console.error("HTML Download Error:", err);
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;
-        showError("エラーが発生しました。もう一度お試しください。");
+        showError("An error has occurred. Please try again.");
       }
     });
 
@@ -1258,10 +1258,10 @@
       const submitBtn = form.querySelector('button[type="submit"]');
       let input = document.getElementById("scratch-id").value.trim();
 
-      if (!input) return showError("プロジェクトIDまたはURLを入力してください。");
+      if (!input) return showError("Please enter the project ID or URL.");
       const match = input.match(/projects\/(\d+)/);
       const projectId = match ? match[1] : input.replace(/\D/g, "");
-      if (!projectId) return showError("有効なプロジェクトIDまたはURLを入力してください。");
+      if (!projectId) return showError("Please enter a valid project ID or URL.");
 
       // ローディング開始
       submitBtn.classList.add('loading');
@@ -1283,7 +1283,7 @@
       const submitBtn = form.querySelector('button[type="submit"]');
       let text = document.getElementById("qr-text").value.trim();
 
-      if (!text) return showError("テキストまたはURLを入力してください。");
+      if (!text) return showError("Please enter text or a URL.");
       if (/^[\w.-]+\.[a-z]{2,}/i.test(text) && !/^https?:\/\//i.test(text)) {
         text = "https://" + text;
       }
@@ -1346,7 +1346,7 @@
             totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
             if (totalSeconds === 0) {
-              showError("タイマーの時間を設定してください。");
+              showError("Please set the timer time.");
               return;
             }
           }
@@ -1542,7 +1542,7 @@
             copyHexBtn.textContent = originalText;
           }, 2000);
         } catch (err) {
-          showError('コピーに失敗しました。');
+          showError('Copy failed.');
         }
       });
 
@@ -1560,3 +1560,4 @@
   </script>
 </body>
 </html>
+
