@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toolberry</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #fff5f7;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ffd4dc;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+
+    #site-logo-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: #e63946;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      transition: opacity 0.2s;
+    }
+
+    #site-logo-link:hover {
+      opacity: 0.8;
+    }
+
+    #site-logo-link img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: #e63946;
+    }
+
+    /* Tools Dropdown */
+    .tools-dropdown {
+      position: relative;
+    }
+
+    #tools-btn {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    #tools-btn:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      right: 0;
+      background: white;
+      border: 1px solid #ffd4dc;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.15);
+      min-width: 200px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .dropdown-menu.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      color: #1a1a1a;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border-bottom: 1px solid #ffd4dc;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background: #fff5f7;
+      color: #e63946;
+    }
+
+    .dropdown-emoji {
+      font-size: 1.25rem;
+    }
+
+    .dropdown-name {
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeInUp 0.4s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Home Page */
+    .home-page {
+      text-align: center;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .home-title {
+      font-size: 6.5rem;
+      font-weight: 700;
+      color: #e63946;
+      margin-bottom: 4rem;
+      letter-spacing: -3px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .tool-card {
+      background: white;
+      border: 1px solid #ffd4dc;
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(230, 57, 70, 0.15);
+      border-color: #e63946;
+    }
+
+    .tool-card-emoji {
+      font-size: 2.5rem;
+    }
+
+    .tool-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .tool-card-desc {
+      font-size: 0.8125rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    /* Tool Pages */
+    .tool-page {
+      background: white;
+      border: 1px solid #ffd4dc;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.08);
+      border-radius: 24px;
+      margin: 0 auto;
+    }
+
+    /* Content Pages (About, How to use) */
+    .content-page {
+      background: white;
+      border: 1px solid #ffd4dc;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 800px;
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.08);
+      border-radius: 24px;
+      margin: 0 auto;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+
+    .back-button:hover {
+      color: #e63946;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .content-body {
+      color: #333;
+      line-height: 1.8;
+      font-size: 0.9375rem;
+    }
+
+    .content-body p {
+      margin-bottom: 1rem;
+    }
+
+    .content-body h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #e63946;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.875rem;
+      border: 1px solid #ffd4dc;
+      font-size: 0.9375rem;
+      outline: none;
+      background: #fff5f7;
+      color: #1a1a1a;
+      transition: all 0.2s;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+
+    input[type="text"]:focus {
+      background: white;
+      border-color: #e63946;
+      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+    }
+
+    input[type="text"]::placeholder {
+      color: #999;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.875rem;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      font-family: inherit;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+    }
+
+    button[type="submit"]:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
+    }
+
+    button[type="submit"]:disabled {
+      background: #ffb3ba;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    button[type="submit"].loading .loading-spinner {
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* QR Result */
+    #qr-result {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #ffd4dc;
+      text-align: center;
+    }
+
+    #qr-result img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ffd4dc;
+      border-radius: 12px;
+    }
+
+    /* Timer Styles */
+    .timer-display {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .timer-time {
+      font-size: 4rem;
+      font-weight: 700;
+      color: #e63946;
+      font-family: 'Courier New', monospace;
+      margin: 1rem 0;
+      letter-spacing: 0.1em;
+    }
+
+    .timer-inputs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .timer-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .timer-input-label {
+      font-size: 0.875rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .timer-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ffd4dc;
+      font-size: 1.5rem;
+      text-align: center;
+      outline: none;
+      background: #fff5f7;
+      color: #1a1a1a;
+      transition: all 0.2s;
+      font-family: 'Courier New', monospace;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .timer-input:focus {
+      background: white;
+      border-color: #e63946;
+      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+    }
+
+    .timer-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .timer-btn {
+      flex: 1;
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.875rem;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+
+    .timer-btn:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.2);
+    }
+
+    .timer-btn:disabled {
+      background: #ffb3ba;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .timer-btn.secondary {
+      background: #666;
+    }
+
+    .timer-btn.secondary:hover {
+      background: #555;
+    }
+
+    .timer-status {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: #666;
+      min-height: 1.5rem;
+    }
+
+    .timer-status.active {
+      color: #e63946;
+      font-weight: 600;
+    }
+
+    /* Color Picker Styles */
+    .color-upload {
+      border: 2px dashed #ffd4dc;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      background: #fff5f7;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    .color-upload:hover {
+      border-color: #e63946;
+      background: white;
+    }
+
+    .color-upload.has-image {
+      border-style: solid;
+      padding: 0;
+      background: white;
+    }
+
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      padding: 2rem;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+    }
+
+    .upload-text {
+      font-size: 0.9375rem;
+      color: #666;
+    }
+
+    #color-file-input {
+      display: none;
+    }
+
+    .color-canvas-wrapper {
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    #color-canvas {
+      max-width: 100%;
+      height: auto;
+      cursor: crosshair;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .color-info {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .color-info-item {
+      background: #fff5f7;
+      border: 1px solid #ffd4dc;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .color-info-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .color-info-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      font-family: 'Courier New', monospace;
+    }
+
+    .color-preview {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
+      border: 1px solid #ffd4dc;
+      margin-bottom: 0.5rem;
+    }
+
+    .color-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .color-btn {
+      flex: 1;
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+
+    .color-btn:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+    }
+
+    .color-btn.secondary {
+      background: #666;
+    }
+
+    .color-btn.secondary:hover {
+      background: #555;
+    }
+
+    .color-hint {
+      text-align: center;
+      font-size: 0.875rem;
+      color: #999;
+      margin-top: 1rem;
+    }
+
+    /* Error Modal */
+    .error-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .error-modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .error-modal-content {
+      background: white;
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #ffd4dc;
+      box-shadow: 0 8px 24px rgba(230, 57, 70, 0.2);
+      border-radius: 20px;
+      text-align: center;
+      animation: errorSlideIn 0.3s ease;
+    }
+
+    @keyframes errorSlideIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .error-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .error-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #e63946;
+      margin-bottom: 0.75rem;
+    }
+
+    .error-message {
+      font-size: 0.9375rem;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-btn {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .error-btn:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem 1.5rem;
+      }
+
+      .header-left {
+        gap: 1.5rem;
+      }
+
+      .header-nav {
+        gap: 1rem;
+      }
+
+      .nav-link {
+        font-size: 0.875rem;
+      }
+
+      .home-title {
+        font-size: 4rem;
+      }
+
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tool-page,
+      .content-page {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="#" id="site-logo-link">
+        <img src="logo.png" alt="Toolberry Logo" />
+        <span>Toolberry</span>
+      </a>
+      <nav class="header-nav">
+        <a class="nav-link" id="about-link">About</a>
+        <a class="nav-link" id="howto-link">How to use</a>
+      </nav>
+    </div>
+    <div class="tools-dropdown">
+      <button id="tools-btn">Tools ▼</button>
+      <div class="dropdown-menu" id="tools-menu">
+        <a class="dropdown-item" data-tool="html">
+          <span class="dropdown-emoji">🌐</span>
+          <span class="dropdown-name">HTML Downloader</span>
+        </a>
+        <a class="dropdown-item" data-tool="sb3">
+          <span class="dropdown-emoji">🐱</span>
+          <span class="dropdown-name">SB3 Downloader</span>
+        </a>
+        <a class="dropdown-item" data-tool="qr">
+          <span class="dropdown-emoji">📱</span>
+          <span class="dropdown-name">QR Maker</span>
+        </a>
+        <a class="dropdown-item" data-tool="timer">
+          <span class="dropdown-emoji">⏱️</span>
+          <span class="dropdown-name">Web Timer</span>
+        </a>
+        <a class="dropdown-item" data-tool="colorpicker">
+          <span class="dropdown-emoji">🎨</span>
+          <span class="dropdown-name">Color Picker</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Home Page -->
+    <div class="page active" id="home-page">
+      <div class="home-page">
+        <h1 class="home-title">Toolberry</h1>
+        <div class="tools-grid">
+          <div class="tool-card" data-tool="html">
+            <div class="tool-card-emoji">🌐</div>
+            <div class="tool-card-title">HTML Downloader</div>
+            <div class="tool-card-desc">Download any webpage as HTML</div>
+          </div>
+          <div class="tool-card" data-tool="sb3">
+            <div class="tool-card-emoji">🐱</div>
+            <div class="tool-card-title">SB3 Downloader</div>
+            <div class="tool-card-desc">Download Scratch projects</div>
+          </div>
+          <div class="tool-card" data-tool="qr">
+            <div class="tool-card-emoji">📱</div>
+            <div class="tool-card-title">QR Code Maker</div>
+            <div class="tool-card-desc">Generate QR codes</div>
+          </div>
+          <div class="tool-card" data-tool="timer">
+            <div class="tool-card-emoji">⏱️</div>
+            <div class="tool-card-title">Web Timer</div>
+            <div class="tool-card-desc">Simple countdown timer</div>
+          </div>
+          <div class="tool-card" data-tool="colorpicker">
+            <div class="tool-card-emoji">🎨</div>
+            <div class="tool-card-title">Color Picker</div>
+            <div class="tool-card-desc">Pick colors from images</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Page -->
+    <div class="page" id="about-page">
+      <div class="content-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>About</h1>
+        <div class="content-body">
+          <p>Toolberry is a simple web tool site that you can use for free.</p>
+
+          <h2>Features</h2>
+          <p>A web tool site that delivers a free experience to users, combining an easy-to-use UI/UX with lightweight performance.</p>
+
+          <h2>Technology</h2>
+          <p>This site was created using AI in part.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to use Page -->
+    <div class="page" id="howto-page">
+      <div class="content-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>How to use</h1>
+        <div class="content-body">
+          <p>How to use each tool on this site</p>
+
+          <h2>HTML Downloader</h2>
+          <p>Enter the URL in the text box in the middle, then press the Download button to download the HTML data for that site.</p>
+
+          <h2>SB3 Downloader</h2>
+          <p>Enter the URL of your Scratch project into the text box in the middle, then press the Download button to download the project's .sb3 file. (You cannot download projects that are not published.)</p>
+
+          <h2>QR Code Maker</h2>
+          <p>Enter a URL or image into the middle text box, then press the Generate button to download a QR code containing that data.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HTML Downloader -->
+    <div class="page" id="html-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>HTML Downloader</h1>
+        <p class="subtitle">Download any webpage as an HTML file</p>
+        <form id="html-form">
+          <input type="text" name="url" placeholder="https://example.com" required />
+          <button type="submit">
+            <span class="loading-spinner"></span>
+            <span class="button-text">Download</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- SB3 Downloader -->
+    <div class="page" id="sb3-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>SB3 Downloader</h1>
+        <p class="subtitle">Download Scratch projects as .sb3 files</p>
+        <form id="sb3-form">
+          <input type="text" id="scratch-id" placeholder="Scratch URL or Project ID" required />
+          <button type="submit">
+            <span class="loading-spinner"></span>
+            <span class="button-text">Download</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- QR Code Maker -->
+    <div class="page" id="qr-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>QR Code Maker</h1>
+        <p class="subtitle">Generate QR codes for text or URLs</p>
+        <form id="qr-form">
+          <input type="text" id="qr-text" placeholder="example.com or any text" required />
+          <button type="submit">
+            <span class="loading-spinner"></span>
+            <span class="button-text">Generate</span>
+          </button>
+        </form>
+        <div id="qr-result"></div>
+      </div>
+    </div>
+
+    <!-- Web Timer -->
+    <div class="page" id="timer-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Web Timer</h1>
+        <p class="subtitle">Simple countdown timer for any task</p>
+
+        <div class="timer-inputs">
+          <div class="timer-input-group">
+            <label class="timer-input-label">Hours</label>
+            <input type="number" id="timer-hours" class="timer-input" min="0" max="23" value="0" />
+          </div>
+          <div class="timer-input-group">
+            <label class="timer-input-label">Minutes</label>
+            <input type="number" id="timer-minutes" class="timer-input" min="0" max="59" value="0" />
+          </div>
+          <div class="timer-input-group">
+            <label class="timer-input-label">Seconds</label>
+            <input type="number" id="timer-seconds" class="timer-input" min="0" max="59" value="0" />
+          </div>
+        </div>
+
+        <div class="timer-display">
+          <div class="timer-time" id="timer-display">00:00:00</div>
+        </div>
+
+        <div class="timer-buttons">
+          <button class="timer-btn" id="timer-start">Start</button>
+          <button class="timer-btn secondary" id="timer-reset">Reset</button>
+        </div>
+
+        <div class="timer-status" id="timer-status"></div>
+      </div>
+    </div>
+
+    <!-- Color Picker -->
+    <div class="page" id="colorpicker-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Color Picker</h1>
+        <p class="subtitle">Pick colors from your images</p>
+
+        <div class="color-upload" id="color-upload-area">
+          <label for="color-file-input" class="upload-label">
+            <div class="upload-icon">🎨</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="color-file-input" accept="image/*" />
+        </div>
+
+        <div id="color-canvas-container" style="display: none;">
+          <div class="color-canvas-wrapper">
+            <canvas id="color-canvas"></canvas>
+          </div>
+
+          <p class="color-hint">Click anywhere on the image to pick a color</p>
+
+          <div class="color-info">
+            <div class="color-info-item">
+              <div class="color-info-label">Color Preview</div>
+              <div class="color-preview" id="color-preview"></div>
+              <div class="color-info-value" id="color-hex">#000000</div>
+            </div>
+            <div class="color-info-item">
+              <div class="color-info-label">RGB Value</div>
+              <div class="color-info-value" id="color-rgb">rgb(0, 0, 0)</div>
+            </div>
+          </div>
+
+          <div class="color-actions">
+            <button class="color-btn" id="copy-hex-btn">Copy HEX</button>
+            <button class="color-btn secondary" id="change-image-btn">Change Image</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Error Modal -->
+  <div class="error-modal" id="error-modal">
+    <div class="error-modal-content">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title">エラー</div>
+      <div class="error-message" id="error-message"></div>
+      <button class="error-btn" id="error-close-btn">OK</button>
+    </div>
+  </div>
+
+  <script>
+    const pages = {
+      home: document.getElementById("home-page"),
+      about: document.getElementById("about-page"),
+      howto: document.getElementById("howto-page"),
+      html: document.getElementById("html-page"),
+      sb3: document.getElementById("sb3-page"),
+      qr: document.getElementById("qr-page"),
+      timer: document.getElementById("timer-page"),
+      colorpicker: document.getElementById("colorpicker-page")
+    };
+
+    // Error modal
+    const errorModal = document.getElementById("error-modal");
+    const errorMessage = document.getElementById("error-message");
+    const errorCloseBtn = document.getElementById("error-close-btn");
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorModal.classList.add("show");
+    }
+
+    function hideError() {
+      errorModal.classList.remove("show");
+    }
+
+    errorCloseBtn.addEventListener("click", hideError);
+
+    errorModal.addEventListener("click", (e) => {
+      if (e.target === errorModal) {
+        hideError();
+      }
+    });
+
+    // Tools dropdown
+    const toolsBtn = document.getElementById("tools-btn");
+    const toolsMenu = document.getElementById("tools-menu");
+
+    toolsBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toolsMenu.classList.toggle("show");
+    });
+
+    document.addEventListener("click", () => {
+      toolsMenu.classList.remove("show");
+    });
+
+    toolsMenu.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
+    // Navigation
+    function showPage(pageName) {
+      Object.values(pages).forEach(page => {
+        page.classList.remove("active");
+      });
+
+      setTimeout(() => {
+        pages[pageName].classList.add("active");
+      }, 50);
+
+      toolsMenu.classList.remove("show");
+      window.scrollTo(0, 0);
+    }
+
+    // Tool cards click
+    document.querySelectorAll(".tool-card").forEach(card => {
+      card.addEventListener("click", () => {
+        const tool = card.getAttribute("data-tool");
+        showPage(tool);
+      });
+    });
+
+    // Dropdown items click
+    document.querySelectorAll(".dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const tool = item.getAttribute("data-tool");
+        showPage(tool);
+      });
+    });
+
+    // Back buttons
+    document.querySelectorAll(".back-button").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        showPage("home");
+      });
+    });
+
+    // Logo link
+    document.getElementById("site-logo-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      showPage("home");
+    });
+
+    // About and How to use links
+    document.getElementById("about-link").addEventListener("click", () => {
+      showPage("about");
+    });
+
+    document.getElementById("howto-link").addEventListener("click", () => {
+      showPage("howto");
+    });
+
+    // HTML Form - iframe方式でダウンロード
+    document.getElementById("html-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const urlInput = form.querySelector('input[name="url"]');
+      let url = urlInput.value.trim();
+
+      // 入力チェック
+      if (!url) {
+        showError("URLを入力してください。");
+        return;
+      }
+
+      // https:// の自動補完
+      if (!/^https?:\/\//i.test(url)) {
+        url = "https://" + url;
+      }
+
+      // URL形式の簡易チェック
+      try {
+        new URL(url);
+      } catch (err) {
+        showError("有効なURLを入力してください。");
+        return;
+      }
+
+      // ローディング開始
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      const XGD_API_KEY = "8e31dd604cd0989aaa6ad94aa319b32f";
+
+      try {
+        // URL短縮API呼び出し
+        const apiUrl = `https://xgd.io/V1/shorten?url=${encodeURIComponent(url)}&key=${XGD_API_KEY}`;
+        const res = await fetch(apiUrl);
+
+        if (!res.ok) {
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          showError("URL短縮サービスに接続できませんでした。");
+          return;
+        }
+
+        const data = await res.json();
+
+        // 短縮URL取得の検証
+        if (data.status !== 200 || !data.shorturl) {
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          showError("URLの短縮に失敗しました。有効なURLを入力してください。");
+          return;
+        }
+
+        const shortUrl = data.shorturl;
+        const downloadUrl = `/download?url=${encodeURIComponent(shortUrl)}`;
+
+        // fetchでエラーチェック（タイムアウト付き）
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, 20000); // 20秒のタイムアウト
+
+        let checkRes;
+        try {
+          checkRes = await fetch(downloadUrl, {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+
+          if (fetchErr.name === 'AbortError') {
+            showError("接続がタイムアウトしました。もう一度お試しください。");
+          } else {
+            showError("ネットワークエラーが発生しました。接続を確認してください。");
+          }
+          return;
+        }
+
+        // ステータスコードをチェック
+        if (!checkRes.ok) {
+          const errorText = await checkRes.text();
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          showError(errorText || "HTMLの取得に失敗しました。URLを確認してください。");
+          return;
+        }
+
+        // Content-Typeをチェック
+        const contentType = checkRes.headers.get('content-type');
+
+        // text/plainの場合はエラーメッセージの可能性が高い
+        if (contentType && contentType.includes('text/plain')) {
+          const errorText = await checkRes.text();
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          showError(errorText);
+          return;
+        }
+
+        // ダウンロード成功 - 隠しiframeで実行
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = downloadUrl;
+        document.body.appendChild(iframe);
+
+        // ローディング終了
+        setTimeout(() => {
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          document.body.removeChild(iframe);
+        }, 3000);
+
+      } catch (err) {
+        console.error("HTML Download Error:", err);
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        showError("エラーが発生しました。もう一度お試しください。");
+      }
+    });
+
+    // SB3 Form
+    document.getElementById("sb3-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      let input = document.getElementById("scratch-id").value.trim();
+
+      if (!input) return showError("プロジェクトIDまたはURLを入力してください。");
+      const match = input.match(/projects\/(\d+)/);
+      const projectId = match ? match[1] : input.replace(/\D/g, "");
+      if (!projectId) return showError("有効なプロジェクトIDまたはURLを入力してください。");
+
+      // ローディング開始
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      window.location.href = `/scratch-download/${projectId}`;
+
+      // 3秒後にローディング終了（ページ遷移するので実際には不要だが念のため）
+      setTimeout(() => {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }, 3000);
+    });
+
+    // QR Form
+    document.getElementById("qr-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      let text = document.getElementById("qr-text").value.trim();
+
+      if (!text) return showError("テキストまたはURLを入力してください。");
+      if (/^[\w.-]+\.[a-z]{2,}/i.test(text) && !/^https?:\/\//i.test(text)) {
+        text = "https://" + text;
+      }
+
+      // ローディング開始
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      window.location.href = `/qrcode?text=${encodeURIComponent(text)}`;
+
+      // 3秒後にローディング終了
+      setTimeout(() => {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }, 3000);
+    });
+
+    // Web Timer
+    let timerInterval = null;
+    let totalSeconds = 0;
+    let isRunning = false;
+
+    function initTimer() {
+      const timerDisplay = document.getElementById("timer-display");
+      const timerStatus = document.getElementById("timer-status");
+      const hoursInput = document.getElementById("timer-hours");
+      const minutesInput = document.getElementById("timer-minutes");
+      const secondsInput = document.getElementById("timer-seconds");
+      const startBtn = document.getElementById("timer-start");
+      const resetBtn = document.getElementById("timer-reset");
+
+      if (!timerDisplay || !startBtn || !resetBtn) return;
+
+      function formatTime(seconds) {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+
+      function updateDisplay() {
+        timerDisplay.textContent = formatTime(totalSeconds);
+      }
+
+      function startTimer() {
+        if (isRunning) {
+          // Pause
+          clearInterval(timerInterval);
+          isRunning = false;
+          startBtn.textContent = "Resume";
+          timerStatus.textContent = "Paused";
+          timerStatus.classList.remove("active");
+        } else {
+          // Start or Resume
+          if (totalSeconds === 0 && !isRunning) {
+            // 新しいタイマーを開始
+            const hours = parseInt(hoursInput.value) || 0;
+            const minutes = parseInt(minutesInput.value) || 0;
+            const seconds = parseInt(secondsInput.value) || 0;
+            totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+            if (totalSeconds === 0) {
+              showError("タイマーの時間を設定してください。");
+              return;
+            }
+          }
+
+          isRunning = true;
+          startBtn.textContent = "Pause";
+          timerStatus.textContent = "Running...";
+          timerStatus.classList.add("active");
+
+          timerInterval = setInterval(() => {
+            totalSeconds--;
+            updateDisplay();
+
+            if (totalSeconds <= 0) {
+              clearInterval(timerInterval);
+              isRunning = false;
+              startBtn.textContent = "Start";
+              timerStatus.textContent = "Time's up! ⏰";
+              timerStatus.classList.remove("active");
+
+              // アラート音（ブラウザのデフォルト）
+              if (typeof Audio !== 'undefined') {
+                try {
+                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiqO1fPTgjMGHGq+7+OZURMKR5/g8r1sIQYqjdXz1IQ0Bh1rwO/lmlETCkeQ3vK8ayEGKo3V89SENAYda8Dv5ZpREwpHkN7yvGshBiqN1fPUhDQGHWvA7+WaURMKR5De8rxrIQYqjdXz1IQ0Bh1rwO/lmlETCkeQ3vK8ayEGKo3V89SENAYda8Dv5ZpREwpHkN7yvGshBiqN1fPUhDQGHWvA7+WaURMK');
+                  audio.play();
+                } catch (e) {
+                  console.log("Audio play failed");
+                }
+              }
+            }
+          }, 1000);
+
+          updateDisplay();
+        }
+      }
+
+      function resetTimer() {
+        clearInterval(timerInterval);
+        isRunning = false;
+        totalSeconds = 0;
+        updateDisplay();
+        startBtn.textContent = "Start";
+        timerStatus.textContent = "";
+        timerStatus.classList.remove("active");
+        hoursInput.value = 0;
+        minutesInput.value = 0;
+        secondsInput.value = 0;
+      }
+
+      startBtn.addEventListener("click", startTimer);
+      resetBtn.addEventListener("click", resetTimer);
+
+      // 入力値の制限
+      [hoursInput, minutesInput, secondsInput].forEach(input => {
+        input.addEventListener("input", () => {
+          const max = parseInt(input.max);
+          const min = parseInt(input.min);
+          let value = parseInt(input.value);
+
+          if (value > max) input.value = max;
+          if (value < min) input.value = min;
+        });
+      });
+    }
+
+    // ページ切り替え時にタイマーを初期化
+    const originalShowPage = showPage;
+    showPage = function(pageName) {
+      originalShowPage(pageName);
+      if (pageName === 'timer') {
+        setTimeout(initTimer, 100);
+      } else if (pageName === 'colorpicker') {
+        setTimeout(initColorPicker, 100);
+      }
+    };
+
+    // Color Picker
+    function initColorPicker() {
+      const fileInput = document.getElementById('color-file-input');
+      const uploadArea = document.getElementById('color-upload-area');
+      const canvas = document.getElementById('color-canvas');
+      const canvasContainer = document.getElementById('color-canvas-container');
+      const colorPreview = document.getElementById('color-preview');
+      const colorHex = document.getElementById('color-hex');
+      const colorRgb = document.getElementById('color-rgb');
+      const copyHexBtn = document.getElementById('copy-hex-btn');
+      const changeImageBtn = document.getElementById('change-image-btn');
+
+      if (!canvas || !fileInput) return;
+
+      const ctx = canvas.getContext('2d');
+      let currentImage = null;
+
+      // ファイル選択時の処理
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          loadImage(file);
+        }
+      });
+
+      // ドラッグ&ドロップ対応
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          loadImage(file);
+        }
+      });
+
+      // 画像を読み込む
+      function loadImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            currentImage = img;
+
+            // キャンバスサイズを画像に合わせる（最大幅500px）
+            const maxWidth = 500;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // 画像を描画
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // UIを更新
+            uploadArea.style.display = 'none';
+            canvasContainer.style.display = 'block';
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // キャンバスクリック時の色取得
+      canvas.addEventListener('click', (e) => {
+        if (!currentImage) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+        const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
+
+        // ピクセルデータを取得
+        const imageData = ctx.getImageData(x, y, 1, 1);
+        const pixel = imageData.data;
+
+        const r = pixel[0];
+        const g = pixel[1];
+        const b = pixel[2];
+
+        // HEXに変換
+        const hex = '#' + [r, g, b].map(x => {
+          const hexValue = x.toString(16);
+          return hexValue.length === 1 ? '0' + hexValue : hexValue;
+        }).join('');
+
+        // RGBフォーマット
+        const rgb = `rgb(${r}, ${g}, ${b})`;
+
+        // UIを更新
+        colorPreview.style.backgroundColor = hex;
+        colorHex.textContent = hex.toUpperCase();
+        colorRgb.textContent = rgb;
+      });
+
+      // HEXコピーボタン
+      copyHexBtn.addEventListener('click', async () => {
+        const hex = colorHex.textContent;
+        try {
+          await navigator.clipboard.writeText(hex);
+          const originalText = copyHexBtn.textContent;
+          copyHexBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyHexBtn.textContent = originalText;
+          }, 2000);
+        } catch (err) {
+          showError('コピーに失敗しました。');
+        }
+      });
+
+      // 画像変更ボタン
+      changeImageBtn.addEventListener('click', () => {
+        uploadArea.style.display = 'block';
+        canvasContainer.style.display = 'none';
+        fileInput.value = '';
+        currentImage = null;
+        colorPreview.style.backgroundColor = '#000000';
+        colorHex.textContent = '#000000';
+        colorRgb.textContent = 'rgb(0, 0, 0)';
+      });
+    }
+  </script>
+</body>
+</html>
