@@ -19,7 +19,7 @@ app.get("/download", async (req, res) => {
   let { url } = req.query;
 
   if (!url) {
-    return res.status(400).send("URLを入力してください。");
+    return res.status(400).send("Please enter the URL.");
   }
 
   // ✅ 自動で https:// を補完
@@ -61,18 +61,18 @@ app.get("/download", async (req, res) => {
 
     // エラーの種類に応じてメッセージを返す
     if (err.code === 'ENOTFOUND') {
-      return res.status(404).send("URLが見つかりません。正しいURLを入力してください。");
+      return res.status(404).send("The URL was not found. Please enter the correct URL.");
     } else if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
-      return res.status(408).send("接続がタイムアウトしました。もう一度お試しください。");
+      return res.status(408).send("The connection timed out. Please try again.");
     } else if (err.code === 'ECONNREFUSED') {
-      return res.status(503).send("サーバーに接続できませんでした。URLを確認してください。");
+      return res.status(503).send("Unable to connect to the server. Please check the URL.");
     } else if (err.response && err.response.status === 404) {
-      return res.status(404).send("ページが見つかりません。URLを確認してください。");
+      return res.status(404).send("The page cannot be found. Please check the URL.");
     } else if (err.response && err.response.status === 403) {
-      return res.status(403).send("アクセスが拒否されました。このページはダウンロードできません。");
+      return res.status(403).send("Access denied. This page cannot be downloaded.");
     }
 
-    return res.status(500).send("HTMLの取得に失敗しました。URLを確認してください。");
+    return res.status(500).send("Failed to retrieve HTML. Please check the URL.");
   }
 });
 
@@ -87,7 +87,7 @@ app.get("/scratch-download/:projectId", async (req, res) => {
   const projectId = match ? match[1] : input.replace(/\D/g, "");
 
   if (!projectId) {
-    return res.status(400).send("プロジェクトIDまたはURLを入力してください。");
+    return res.status(400).send("Please enter the project ID or URL.");
   }
 
   const metaUrl = `https://api.scratch.mit.edu/projects/${projectId}`;
@@ -106,7 +106,7 @@ app.get("/scratch-download/:projectId", async (req, res) => {
 
     if (!token) {
       await fs.promises.rm(tempDir, { recursive: true, force: true });
-      return res.status(400).send("このプロジェクトは公開されていません。");
+      return res.status(400).send("This project is not publicly available.");
     }
 
     // プロジェクトデータを取得
@@ -151,10 +151,10 @@ app.get("/scratch-download/:projectId", async (req, res) => {
     }
 
     if (err.response && err.response.status === 404) {
-      return res.status(404).send("プロジェクトが見つかりません。IDを確認してください。");
+      return res.status(404).send("The project cannot be found. Please verify the ID.");
     }
 
-    return res.status(500).send("Scratchプロジェクトの取得に失敗しました。");
+    return res.status(500).send("Failed to retrieve the Scratch project.");
   }
 });
 
@@ -165,7 +165,7 @@ app.get("/qrcode", async (req, res) => {
   let { text } = req.query;
 
   if (!text) {
-    return res.status(400).send("テキストまたはURLを入力してください。");
+    return res.status(400).send("Please enter text or a URL.");
   }
 
   // ✅ https:// 自動補完（ただしリンクらしい時のみ）
@@ -206,7 +206,7 @@ app.get("/qrcode", async (req, res) => {
 
   } catch (err) {
     console.error("[QR ERROR]", err.message);
-    return res.status(500).send("QRコードの生成に失敗しました。");
+    return res.status(500).send("QR code generation failed.");
   }
 });
 
@@ -245,3 +245,4 @@ process.on("SIGINT", () => {
   cleanupTempFiles();
   process.exit();
 });
+
