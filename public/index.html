@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Toolberry</title>
   <link rel="icon" type="image/png" href="favicon.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -259,7 +261,7 @@
       border: 1px solid #ffd4dc;
       padding: 3rem 2.5rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       box-shadow: 0 4px 12px rgba(230, 57, 70, 0.08);
       border-radius: 24px;
       margin: 0 auto;
@@ -664,6 +666,124 @@
       margin-top: 1rem;
     }
 
+    /* Image Resize Styles */
+    .resize-upload {
+      border: 2px dashed #ffd4dc;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      background: #fff5f7;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    .resize-upload:hover {
+      border-color: #e63946;
+      background: white;
+    }
+
+    #resize-file-input {
+      display: none;
+    }
+
+    .resize-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .resize-input-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .resize-input-group label {
+      min-width: 80px;
+      font-size: 0.875rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .resize-input-group input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #ffd4dc;
+      font-size: 0.9375rem;
+      outline: none;
+      background: #fff5f7;
+      color: #1a1a1a;
+      transition: all 0.2s;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+
+    .resize-input-group input:focus {
+      background: white;
+      border-color: #e63946;
+      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+    }
+
+    .resize-preview {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+
+    .resize-preview img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      border: 1px solid #ffd4dc;
+    }
+
+    .resize-info {
+      text-align: center;
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .resize-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .resize-btn {
+      flex: 1;
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.875rem;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      font-family: inherit;
+      border-radius: 12px;
+    }
+
+    .resize-btn:hover {
+      background: #d62839;
+      transform: translateY(-1px);
+    }
+
+    .resize-btn:disabled {
+      background: #ffb3ba;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .resize-btn.secondary {
+      background: #666;
+    }
+
+    .resize-btn.secondary:hover {
+      background: #555;
+    }
+
     /* Error Modal */
     .error-modal {
       display: none;
@@ -745,22 +865,50 @@
     @media (max-width: 768px) {
       header {
         padding: 1rem 1.5rem;
-      }
-
-      .header-left {
-        gap: 1.5rem;
-      }
-
-      .header-nav {
+        flex-wrap: wrap;
         gap: 1rem;
       }
 
+      .header-left {
+        gap: 1rem;
+        flex: 1;
+        min-width: 0;
+      }
+
+      #site-logo-link {
+        font-size: 1.125rem;
+      }
+
+      #site-logo-link img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .header-nav {
+        gap: 0.75rem;
+      }
+
       .nav-link {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
+      }
+
+      .tools-dropdown {
+        width: 100%;
+        order: 3;
+      }
+
+      #tools-btn {
+        width: 100%;
+      }
+
+      .dropdown-menu {
+        left: 0;
+        right: 0;
+        width: 100%;
       }
 
       .home-title {
-        font-size: 4rem;
+        font-size: 3rem;
       }
 
       .tools-grid {
@@ -770,6 +918,19 @@
       .tool-page,
       .content-page {
         padding: 2rem 1.5rem;
+      }
+
+      .timer-inputs {
+        grid-template-columns: 1fr;
+      }
+
+      .timer-time {
+        font-size: 2.5rem;
+        word-break: break-all;
+      }
+
+      .color-info {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -809,6 +970,14 @@
           <span class="dropdown-emoji">🎨</span>
           <span class="dropdown-name">Color Picker</span>
         </a>
+        <a class="dropdown-item" data-tool="resize">
+          <span class="dropdown-emoji">📐</span>
+          <span class="dropdown-name">Image Resize</span>
+        </a>
+        <a class="dropdown-item" id="more-tools-btn" style="border-top: 2px solid #ffd4dc;">
+          <span class="dropdown-emoji">📦</span>
+          <span class="dropdown-name">More Tools</span>
+        </a>
       </div>
     </div>
   </header>
@@ -819,6 +988,7 @@
       <div class="home-page">
         <h1 class="home-title">Toolberry</h1>
         <div class="tools-grid">
+          <!-- General Utilities -->
           <div class="tool-card" data-tool="html">
             <div class="tool-card-emoji">🌐</div>
             <div class="tool-card-title">HTML Downloader</div>
@@ -829,23 +999,83 @@
             <div class="tool-card-title">SB3 Downloader</div>
             <div class="tool-card-desc">Download Scratch projects</div>
           </div>
-          <div class="tool-card" data-tool="qr">
-            <div class="tool-card-emoji">📱</div>
-            <div class="tool-card-title">QR Code Maker</div>
-            <div class="tool-card-desc">Generate QR codes</div>
-          </div>
           <div class="tool-card" data-tool="timer">
             <div class="tool-card-emoji">⏱️</div>
             <div class="tool-card-title">Web Timer</div>
             <div class="tool-card-desc">Simple countdown timer</div>
           </div>
+          <div class="tool-card" data-tool="charcount">
+            <div class="tool-card-emoji">🔤</div>
+            <div class="tool-card-title">Character Counter</div>
+            <div class="tool-card-desc">Count characters and words</div>
+          </div>
+          <div class="tool-card" data-tool="gradienttext">
+            <div class="tool-card-emoji">🌈</div>
+            <div class="tool-card-title">Gradient Text</div>
+            <div class="tool-card-desc">Create gradient-styled text</div>
+          </div>
+
+          <!-- QR & Web Utilities -->
+          <div class="tool-card" data-tool="qr">
+            <div class="tool-card-emoji">📱</div>
+            <div class="tool-card-title">QR Code Maker</div>
+            <div class="tool-card-desc">Generate QR codes</div>
+          </div>
+          <div class="tool-card" data-tool="qrreader">
+            <div class="tool-card-emoji">🔍</div>
+            <div class="tool-card-title">QR Code Reader</div>
+            <div class="tool-card-desc">Decode QR codes from images</div>
+          </div>
+          <div class="tool-card" data-tool="youtubethumb">
+            <div class="tool-card-emoji">📺</div>
+            <div class="tool-card-title">YouTube Thumbnail</div>
+            <div class="tool-card-desc">Download video thumbnails</div>
+          </div>
+
+          <!-- Image Editing -->
           <div class="tool-card" data-tool="colorpicker">
             <div class="tool-card-emoji">🎨</div>
             <div class="tool-card-title">Color Picker</div>
             <div class="tool-card-desc">Pick colors from images</div>
           </div>
-        </div>
-      </div>
+          <div class="tool-card" data-tool="resize">
+            <div class="tool-card-emoji">📐</div>
+            <div class="tool-card-title">Image Resize</div>
+            <div class="tool-card-desc">Resize images easily</div>
+          </div>
+          <div class="tool-card" data-tool="imagecrop">
+            <div class="tool-card-emoji">✂️</div>
+            <div class="tool-card-title">Image Crop</div>
+            <div class="tool-card-desc">Crop and trim images</div>
+          </div>
+          <div class="tool-card" data-tool="imageround">
+            <div class="tool-card-emoji">⭕</div>
+            <div class="tool-card-title">Rounded Corners</div>
+            <div class="tool-card-desc">Add rounded corners to images</div>
+          </div>
+          <div class="tool-card" data-tool="webp">
+            <div class="tool-card-emoji">🖼️</div>
+            <div class="tool-card-title">WebP Converter</div>
+            <div class="tool-card-desc">Convert images to WebP</div>
+          </div>
+          <div class="tool-card" data-tool="imagecompress">
+            <div class="tool-card-emoji">📦</div>
+            <div class="tool-card-title">Image Compress</div>
+            <div class="tool-card-desc">Reduce image file size</div>
+          </div>
+
+          <!-- Video & File Tools -->
+          <div class="tool-card" data-tool="videogif">
+            <div class="tool-card-emoji">🎞️</div>
+            <div class="tool-card-title">Video to GIF</div>
+            <div class="tool-card-desc">Turn videos into GIFs</div>
+          </div>
+          <div class="tool-card" data-tool="zipcompress">
+            <div class="tool-card-emoji">🗜️</div>
+            <div class="tool-card-title">ZIP Compress</div>
+            <div class="tool-card-desc">Compress files to ZIP</div>
+          </div>
+        </div>      </div>
     </div>
 
     <!-- About Page -->
@@ -871,16 +1101,7 @@
         <a href="#" class="back-button">← Back to Home</a>
         <h1>How to use</h1>
         <div class="content-body">
-          <p>How to use each tool on this site</p>
-
-          <h2>HTML Downloader</h2>
-          <p>Enter the URL in the text box in the middle, then press the Download button to download the HTML data for that site.</p>
-
-          <h2>SB3 Downloader</h2>
-          <p>Enter the URL of your Scratch project into the text box in the middle, then press the Download button to download the project's .sb3 file. (You cannot download projects that are not published.)</p>
-
-          <h2>QR Code Maker</h2>
-          <p>Enter a URL or image into the middle text box, then press the Generate button to download a QR code containing that data.</p>
+          <p>Select a tool from the home screen or press the Tools button in the header to choose a tool.</p>
         </div>
       </div>
     </div>
@@ -1010,13 +1231,400 @@
         </div>
       </div>
     </div>
+
+    <!-- Image Resize -->
+    <div class="page" id="resize-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Image Resize</h1>
+        <p class="subtitle">Resize your images to any dimension</p>
+
+        <div class="resize-upload" id="resize-upload-area">
+          <label for="resize-file-input" class="upload-label">
+            <div class="upload-icon">📐</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="resize-file-input" accept="image/*" />
+        </div>
+
+        <div id="resize-controls-container" style="display: none;">
+          <div class="resize-info">
+            Original size: <span id="original-size">-</span>
+          </div>
+
+          <div class="resize-controls">
+            <div class="resize-input-group">
+              <label>Width (px)</label>
+              <input type="number" id="resize-width" min="1" placeholder="Width" />
+            </div>
+            <div class="resize-input-group">
+              <label>Height (px)</label>
+              <input type="number" id="resize-height" min="1" placeholder="Height" />
+            </div>
+            <div class="resize-input-group">
+              <label>
+                <input type="checkbox" id="maintain-ratio" checked style="width: auto; margin-right: 0.5rem;" />
+                Maintain aspect ratio
+              </label>
+            </div>
+          </div>
+
+          <div class="resize-preview" id="resize-preview-container">
+            <canvas id="resize-canvas" style="display: none;"></canvas>
+          </div>
+
+          <div class="resize-buttons">
+            <button class="resize-btn" id="resize-apply-btn">Apply Resize</button>
+            <button class="resize-btn" id="resize-download-btn" style="display: none;">Download</button>
+            <button class="resize-btn secondary" id="resize-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Character Counter -->
+    <div class="page" id="charcount-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Character Counter</h1>
+        <p class="subtitle">Count characters, words, and lines in real-time</p>
+
+        <textarea id="charcount-textarea"
+          style="width: 100%; min-height: 250px; padding: 1rem; border: 1px solid #ffd4dc; border-radius: 12px;
+          font-size: 0.9375rem; outline: none; background: #fff5f7; color: #1a1a1a; transition: all 0.2s;
+          font-family: inherit; resize: vertical; line-height: 1.6;"
+          placeholder="Enter your text here..."
+        ></textarea>
+
+        <div class="color-info" style="margin-top: 1.5rem;">
+          <div class="color-info-item">
+            <div class="color-info-label">Characters</div>
+            <div class="color-info-value" id="char-count">0</div>
+          </div>
+          <div class="color-info-item">
+            <div class="color-info-label">Words</div>
+            <div class="color-info-value" id="word-count">0</div>
+          </div>
+          <div class="color-info-item">
+            <div class="color-info-label">Lines</div>
+            <div class="color-info-value" id="line-count">0</div>
+          </div>
+          <div class="color-info-item">
+            <div class="color-info-label">No Spaces</div>
+            <div class="color-info-value" id="char-count-no-space">0</div>
+          </div>
+        </div>
+
+        <div class="color-actions" style="margin-top: 1.5rem;">
+          <button class="color-btn" id="copy-text-btn">Copy Text</button>
+          <button class="color-btn secondary" id="clear-text-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Crop -->
+    <div class="page" id="imagecrop-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Image Crop</h1>
+        <p class="subtitle">Crop and trim your images</p>
+
+        <div class="resize-upload" id="crop-upload-area">
+          <label for="crop-file-input" class="upload-label">
+            <div class="upload-icon">✂️</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="crop-file-input" accept="image/*" style="display: none;" />
+        </div>
+
+        <div id="crop-controls-container" style="display: none;">
+          <div class="resize-info" style="margin-bottom: 1rem;">
+            Drag to select crop area
+          </div>
+
+          <div style="position: relative; display: inline-block; max-width: 100%; user-select: none;">
+            <canvas id="crop-canvas" style="max-width: 100%; border: 1px solid #ffd4dc; border-radius: 12px; cursor: crosshair;"></canvas>
+            <div id="crop-selection" style="position: absolute; border: 2px dashed #e63946; background: rgba(230, 57, 70, 0.1); pointer-events: none; display: none;"></div>
+          </div>
+
+          <div class="resize-buttons" style="margin-top: 1.5rem;">
+            <button class="resize-btn" id="crop-apply-btn">Crop Image</button>
+            <button class="resize-btn" id="crop-download-btn" style="display: none;">Download</button>
+            <button class="resize-btn secondary" id="crop-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZIP Compress -->
+    <div class="page" id="zipcompress-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>ZIP Compress</h1>
+        <p class="subtitle">Compress multiple files into a ZIP archive</p>
+
+        <div class="resize-upload" id="zip-upload-area">
+          <label for="zip-file-input" class="upload-label">
+            <div class="upload-icon">🗜️</div>
+            <div class="upload-text">Click to select files or drag & drop</div>
+          </label>
+          <input type="file" id="zip-file-input" multiple style="display: none;" />
+        </div>
+
+        <div id="zip-files-list" style="display: none; margin-top: 1.5rem;">
+          <div class="resize-info">
+            Selected files: <span id="zip-file-count">0</span>
+          </div>
+          <div id="zip-file-names" style="margin-top: 1rem; padding: 1rem; background: #fff5f7; border: 1px solid #ffd4dc; border-radius: 12px; max-height: 200px; overflow-y: auto; font-size: 0.875rem; color: #666;"></div>
+
+          <div class="resize-buttons" style="margin-top: 1.5rem;">
+            <button class="resize-btn" id="zip-compress-btn">Create ZIP</button>
+            <button class="resize-btn secondary" id="zip-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Compress -->
+    <div class="page" id="imagecompress-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Image Compress</h1>
+        <p class="subtitle">Reduce image file size with quality control</p>
+
+        <div class="resize-upload" id="compress-upload-area">
+          <label for="compress-file-input" class="upload-label">
+            <div class="upload-icon">📦</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="compress-file-input" accept="image/*" style="display: none;" />
+        </div>
+
+        <div id="compress-controls-container" style="display: none;">
+          <div class="resize-info">
+            Original size: <span id="compress-original-size">-</span>
+          </div>
+
+          <div class="resize-controls" style="margin-top: 1.5rem;">
+            <div class="resize-input-group">
+              <label>Quality (%)</label>
+              <input type="range" id="compress-quality" min="1" max="100" value="80" style="width: 100%; margin-bottom: 0.5rem;" />
+              <div style="text-align: center; font-size: 1.25rem; font-weight: 600; color: #e63946;" id="compress-quality-display">80%</div>
+            </div>
+          </div>
+
+          <div class="resize-preview" id="compress-preview-container" style="margin-top: 1.5rem;">
+            <canvas id="compress-canvas" style="display: none; max-width: 100%; border: 1px solid #ffd4dc; border-radius: 12px;"></canvas>
+          </div>
+
+          <div class="resize-info" style="margin-top: 1rem;">
+            Compressed size: <span id="compress-new-size">-</span>
+          </div>
+
+          <div class="resize-buttons" style="margin-top: 1.5rem;">
+            <button class="resize-btn" id="compress-apply-btn">Compress</button>
+            <button class="resize-btn" id="compress-download-btn" style="display: none;">Download</button>
+            <button class="resize-btn secondary" id="compress-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gradient Text -->
+    <div class="page" id="gradienttext-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Gradient Text Generator</h1>
+        <p class="subtitle">Create gradient-styled text and copy CSS instantly</p>
+
+        <form id="gradient-form" class="color-info" style="gap: 1rem;">
+          <div class="color-info-item" style="grid-column: span 2;">
+            <div class="color-info-label">Text</div>
+            <input id="gradient-text" type="text" value="Gradient Text" style="width: 100%; padding: 0.75rem; border: 1px solid #ffd4dc; border-radius: 12px; background: #fff5f7; outline: none;" />
+          </div>
+          <div class="color-info-item">
+            <div class="color-info-label">Start Color</div>
+            <input id="gradient-start-color" type="color" value="#ff7a7a" style="width: 100%; height: 48px; border: none;" />
+          </div>
+          <div class="color-info-item">
+            <div class="color-info-label">End Color</div>
+            <input id="gradient-end-color" type="color" value="#577dff" style="width: 100%; height: 48px; border: none;" />
+          </div>
+          <div class="color-info-item" style="grid-column: span 2;">
+            <div class="color-info-label">Angle</div>
+            <input id="gradient-angle" type="range" min="0" max="360" value="90" style="width: 100%;" />
+          </div>
+        </form>
+
+        <div id="gradient-preview" style="margin-top: 1.5rem; padding: 1.5rem; font-size: 2rem; font-weight: 700; border: 1px solid #ffd4dc; border-radius: 16px; text-align: center; background: linear-gradient(90deg, #ff7a7a, #577dff); color: white; -webkit-background-clip: text; color: transparent;">Gradient Text</div>
+
+        <textarea id="gradient-css" readonly style="margin-top: 1.5rem; width: 100%; height: 120px; border: 1px solid #ffd4dc; border-radius: 12px; padding: 1rem; background: #fff5f7; font-family: 'Courier New', monospace; font-size: 0.85rem;"></textarea>
+
+        <div class="color-actions" style="margin-top: 1.5rem;">
+          <button class="color-btn" id="gradient-copy">Copy CSS</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rounded Corners -->
+    <div class="page" id="imageround-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Rounded Corners</h1>
+        <p class="subtitle">Add smooth, round corners to your images</p>
+
+        <div class="resize-upload" id="round-upload-area">
+          <label for="round-file-input" class="upload-label">
+            <div class="upload-icon">⭕</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="round-file-input" accept="image/*" style="display: none;" />
+        </div>
+
+        <div id="round-controls" style="display: none;">
+          <div class="resize-controls" style="margin-bottom: 1.5rem;">
+            <div class="resize-input-group" style="flex-direction: column; align-items: flex-start; gap: 0.75rem;">
+              <label>Corner Radius</label>
+              <input type="range" id="round-radius" min="0" max="300" value="25" style="width: 100%;" />
+              <div style="font-size: 1.125rem; font-weight: 600; color: #e63946;" id="round-radius-value">25px</div>
+            </div>
+          </div>
+
+          <div id="round-preview" style="margin-bottom: 1.5rem; text-align: center;"></div>
+
+          <div class="resize-buttons" style="margin-top: 0;">
+            <button class="resize-btn" id="round-download-btn" style="display: none;">Download</button>
+            <button class="resize-btn secondary" id="round-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WebP Converter -->
+    <div class="page" id="webp-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>WebP Converter</h1>
+        <p class="subtitle">Convert your images into WebP format</p>
+
+        <div class="resize-upload" id="webp-upload-area">
+          <label for="webp-file-input" class="upload-label">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">Click to upload image or drag & drop</div>
+          </label>
+          <input type="file" id="webp-file-input" accept="image/*" style="display: none;" />
+        </div>
+
+        <div id="webp-controls" style="display: none;">
+          <div class="resize-controls" style="margin-bottom: 1.5rem;">
+            <div class="resize-input-group" style="flex-direction: column; align-items: flex-start; gap: 0.75rem;">
+              <label>Quality</label>
+              <input type="range" id="webp-quality" min="1" max="100" value="90" style="width: 100%;" />
+              <div style="font-size: 1.125rem; font-weight: 600; color: #e63946;" id="webp-quality-value">90%</div>
+            </div>
+          </div>
+
+          <div id="webp-preview" style="margin-bottom: 1.5rem; text-align: center;"></div>
+
+          <div class="resize-buttons">
+            <button class="resize-btn" id="webp-download-btn" style="display: none;">Download</button>
+            <button class="resize-btn secondary" id="webp-reset-btn">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Reader -->
+    <div class="page" id="qrreader-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>QR Code Reader</h1>
+        <p class="subtitle">Upload an image and decode its QR code</p>
+
+        <div class="resize-upload" id="qrreader-upload-area">
+          <label for="qrreader-file-input" class="upload-label">
+            <div class="upload-icon">🔍</div>
+            <div class="upload-text">Click to upload QR image or drag & drop</div>
+          </label>
+          <input type="file" id="qrreader-file-input" accept="image/*" style="display: none;" />
+        </div>
+
+        <div class="resize-preview" style="margin-top: 1.5rem; text-align: center;">
+          <img id="qrreader-preview" alt="QR preview" style="max-width: 100%; border-radius: 12px; display: none;" />
+        </div>
+
+        <p id="qrreader-result" style="margin-top: 1.5rem; text-align: center; font-size: 0.95rem; color: #333;">No data detected yet.</p>
+
+        <div class="color-actions" style="margin-top: 1.5rem;">
+          <button class="color-btn" id="qrreader-copy" style="display: none;">Copy Result</button>
+          <button class="color-btn secondary" id="qrreader-reset">Reset</button>
+        </div>
+
+        <canvas id="qrreader-canvas" style="display: none;"></canvas>
+      </div>
+    </div>
+
+    <!-- Video to GIF -->
+    <div class="page" id="videogif-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>Video to GIF</h1>
+        <p class="subtitle">Convert your video clips into animated GIFs</p>
+
+        <form id="videogif-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div class="resize-upload" style="display: block;">
+            <label class="upload-label" for="videogif-file">
+              <div class="upload-icon">🎞️</div>
+              <div class="upload-text">Click to upload video or drag & drop</div>
+            </label>
+            <input type="file" id="videogif-file" accept="video/*" style="display: none;" />
+          </div>
+
+          <p id="videogif-status" style="text-align: center; font-size: 0.95rem; color: #666;">Upload a video to convert it into a GIF.</p>
+
+          <div class="color-actions" style="margin-top: 0;">
+            <button class="color-btn" type="submit">Convert to GIF</button>
+            <button class="color-btn secondary" type="button" id="videogif-reset">Reset</button>
+          </div>
+        </form>
+
+        <div class="color-actions" style="margin-top: 1.5rem; justify-content: center;">
+          <button class="color-btn" id="videogif-download" style="display: none;">Download GIF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- YouTube Thumbnail -->
+    <div class="page" id="youtubethumb-page">
+      <div class="tool-page">
+        <a href="#" class="back-button">← Back to Home</a>
+        <h1>YouTube Thumbnail Downloader</h1>
+        <p class="subtitle">Fetch full-resolution thumbnails from YouTube videos</p>
+
+        <form id="youtubethumb-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <input type="text" id="youtubethumb-url" placeholder="Enter YouTube video URL" style="width: 100%; padding: 0.85rem; border: 1px solid #ffd4dc; border-radius: 12px; background: #fff5f7;" />
+          <div class="color-actions" style="margin-top: 0;">
+            <button class="color-btn" type="submit">Get Thumbnail</button>
+            <button class="color-btn secondary" type="button" id="youtubethumb-reset">Reset</button>
+          </div>
+        </form>
+
+        <div class="resize-preview" style="margin-top: 1.5rem; text-align: center;">
+          <img id="youtubethumb-preview" alt="YouTube thumbnail preview" style="max-width: 100%; border-radius: 12px; display: none;" />
+        </div>
+
+        <div class="color-actions" style="margin-top: 1.5rem; justify-content: center;">
+          <button class="color-btn" id="youtubethumb-download" style="display: none;">Download Thumbnail</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Error Modal -->
   <div class="error-modal" id="error-modal">
     <div class="error-modal-content">
       <div class="error-icon">⚠️</div>
-      <div class="error-title">エラー</div>
+      <div class="error-title">Error</div>
       <div class="error-message" id="error-message"></div>
       <button class="error-btn" id="error-close-btn">OK</button>
     </div>
@@ -1031,7 +1639,18 @@
       sb3: document.getElementById("sb3-page"),
       qr: document.getElementById("qr-page"),
       timer: document.getElementById("timer-page"),
-      colorpicker: document.getElementById("colorpicker-page")
+      colorpicker: document.getElementById("colorpicker-page"),
+      resize: document.getElementById("resize-page"),
+      charcount: document.getElementById("charcount-page"),
+      imagecrop: document.getElementById("imagecrop-page"),
+      zipcompress: document.getElementById("zipcompress-page"),
+      imagecompress: document.getElementById("imagecompress-page"),
+      gradienttext: document.getElementById("gradienttext-page"),
+      imageround: document.getElementById("imageround-page"),
+      webp: document.getElementById("webp-page"),
+      qrreader: document.getElementById("qrreader-page"),
+      videogif: document.getElementById("videogif-page"),
+      youtubethumb: document.getElementById("youtubethumb-page")
     };
 
     // Error modal
@@ -1099,8 +1718,15 @@
     document.querySelectorAll(".dropdown-item").forEach(item => {
       item.addEventListener("click", () => {
         const tool = item.getAttribute("data-tool");
-        showPage(tool);
+        if (tool) {
+          showPage(tool);
+        }
       });
+    });
+
+    // More Tools button
+    document.getElementById("more-tools-btn").addEventListener("click", () => {
+      showPage("home");
     });
 
     // Back buttons
@@ -1136,7 +1762,7 @@
 
       // 入力チェック
       if (!url) {
-        showError("Please enter the URL.");
+        showError("Please enter a URL.");
         return;
       }
 
@@ -1167,7 +1793,7 @@
         if (!res.ok) {
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError("Unable to connect to the URL shortening service.");
+          showError("Could not connect to URL shortening service.");
           return;
         }
 
@@ -1177,7 +1803,7 @@
         if (data.status !== 200 || !data.shorturl) {
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError("URL shortening failed. Please enter a valid URL.");
+          showError("Failed to shorten URL. Please enter a valid URL.");
           return;
         }
 
@@ -1202,9 +1828,9 @@
           submitBtn.disabled = false;
 
           if (fetchErr.name === 'AbortError') {
-            showError("The connection timed out. Please try again.");
+            showError("Connection timed out. Please try again.");
           } else {
-            showError("A network error has occurred. Please check your connection.");
+            showError("Network error occurred. Please check your connection.");
           }
           return;
         }
@@ -1214,7 +1840,7 @@
           const errorText = await checkRes.text();
           submitBtn.classList.remove('loading');
           submitBtn.disabled = false;
-          showError(errorText || "Failed to retrieve HTML. Please check the URL.");
+          showError(errorText || "Failed to fetch HTML. Please check the URL.");
           return;
         }
 
@@ -1247,7 +1873,7 @@
         console.error("HTML Download Error:", err);
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;
-        showError("An error has occurred. Please try again.");
+        showError("An error occurred. Please try again.");
       }
     });
 
@@ -1258,7 +1884,7 @@
       const submitBtn = form.querySelector('button[type="submit"]');
       let input = document.getElementById("scratch-id").value.trim();
 
-      if (!input) return showError("Please enter the project ID or URL.");
+      if (!input) return showError("Please enter a project ID or URL.");
       const match = input.match(/projects\/(\d+)/);
       const projectId = match ? match[1] : input.replace(/\D/g, "");
       if (!projectId) return showError("Please enter a valid project ID or URL.");
@@ -1283,7 +1909,7 @@
       const submitBtn = form.querySelector('button[type="submit"]');
       let text = document.getElementById("qr-text").value.trim();
 
-      if (!text) return showError("Please enter text or a URL.");
+      if (!text) return showError("Please enter text or URL.");
       if (/^[\w.-]+\.[a-z]{2,}/i.test(text) && !/^https?:\/\//i.test(text)) {
         text = "https://" + text;
       }
@@ -1346,7 +1972,7 @@
             totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
             if (totalSeconds === 0) {
-              showError("Please set the timer time.");
+              showError("Please set timer duration.");
               return;
             }
           }
@@ -1412,7 +2038,7 @@
       });
     }
 
-    // ページ切り替え時にタイマーを初期化
+    // ページ切り替え時に初期化
     const originalShowPage = showPage;
     showPage = function(pageName) {
       originalShowPage(pageName);
@@ -1420,6 +2046,28 @@
         setTimeout(initTimer, 100);
       } else if (pageName === 'colorpicker') {
         setTimeout(initColorPicker, 100);
+      } else if (pageName === 'resize') {
+        setTimeout(initImageResize, 100);
+      } else if (pageName === 'charcount') {
+        setTimeout(initCharCounter, 100);
+      } else if (pageName === 'imagecrop') {
+        setTimeout(initImageCrop, 100);
+      } else if (pageName === 'zipcompress') {
+        setTimeout(initZipCompress, 100);
+      } else if (pageName === 'imagecompress') {
+        setTimeout(initImageCompress, 100);
+      } else if (pageName === 'gradienttext') {
+        setTimeout(initGradientText, 100);
+      } else if (pageName === 'imageround') {
+        setTimeout(initImageRound, 100);
+      } else if (pageName === 'webp') {
+        setTimeout(initWebpConverter, 100);
+      } else if (pageName === 'qrreader') {
+        setTimeout(initQrReader, 100);
+      } else if (pageName === 'videogif') {
+        setTimeout(initVideoGif, 100);
+      } else if (pageName === 'youtubethumb') {
+        setTimeout(initYoutubeThumb, 100);
       }
     };
 
@@ -1542,7 +2190,7 @@
             copyHexBtn.textContent = originalText;
           }, 2000);
         } catch (err) {
-          showError('Copy failed.');
+          showError('Failed to copy.');
         }
       });
 
@@ -1557,7 +2205,1088 @@
         colorRgb.textContent = 'rgb(0, 0, 0)';
       });
     }
+
+    // Image Resize
+    function initImageResize() {
+      const fileInput = document.getElementById('resize-file-input');
+      const uploadArea = document.getElementById('resize-upload-area');
+      const controlsContainer = document.getElementById('resize-controls-container');
+      const widthInput = document.getElementById('resize-width');
+      const heightInput = document.getElementById('resize-height');
+      const maintainRatio = document.getElementById('maintain-ratio');
+      const canvas = document.getElementById('resize-canvas');
+      const originalSizeSpan = document.getElementById('original-size');
+      const applyBtn = document.getElementById('resize-apply-btn');
+      const downloadBtn = document.getElementById('resize-download-btn');
+      const resetBtn = document.getElementById('resize-reset-btn');
+
+      if (!canvas || !fileInput) return;
+
+      const ctx = canvas.getContext('2d');
+      let originalImage = null;
+      let originalWidth = 0;
+      let originalHeight = 0;
+
+      // ファイル選択
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) loadImage(file);
+      });
+
+      // ドラッグ&ドロップ
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          loadImage(file);
+        }
+      });
+
+      function loadImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            originalWidth = img.width;
+            originalHeight = img.height;
+
+            widthInput.value = originalWidth;
+            heightInput.value = originalHeight;
+            originalSizeSpan.textContent = `${originalWidth} x ${originalHeight}px`;
+
+            canvas.width = originalWidth;
+            canvas.height = originalHeight;
+            ctx.drawImage(img, 0, 0);
+            canvas.style.display = 'block';
+
+            uploadArea.style.display = 'none';
+            controlsContainer.style.display = 'block';
+            downloadBtn.style.display = 'none';
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // 縦横比維持
+      let isUpdating = false;
+      widthInput.addEventListener('input', () => {
+        if (!maintainRatio.checked || isUpdating) return;
+        isUpdating = true;
+        const ratio = originalHeight / originalWidth;
+        heightInput.value = Math.round(widthInput.value * ratio);
+        isUpdating = false;
+      });
+
+      heightInput.addEventListener('input', () => {
+        if (!maintainRatio.checked || isUpdating) return;
+        isUpdating = true;
+        const ratio = originalWidth / originalHeight;
+        widthInput.value = Math.round(heightInput.value * ratio);
+        isUpdating = false;
+      });
+
+      // リサイズ適用
+      applyBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+
+        const newWidth = parseInt(widthInput.value);
+        const newHeight = parseInt(heightInput.value);
+
+        if (!newWidth || !newHeight || newWidth < 1 || newHeight < 1) {
+          showError('Please enter valid dimensions.');
+          return;
+        }
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        ctx.drawImage(originalImage, 0, 0, newWidth, newHeight);
+
+        downloadBtn.style.display = 'block';
+      });
+
+      // ダウンロード
+      let isResizeDownloading = false;
+      downloadBtn.addEventListener('click', () => {
+        if (isResizeDownloading) return;
+        isResizeDownloading = true;
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            isResizeDownloading = false;
+            showError('Failed to generate image.');
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `resized_${Date.now()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setTimeout(() => { isResizeDownloading = false; }, 1000);
+        });
+      });
+
+      // リセット
+      resetBtn.addEventListener('click', () => {
+        uploadArea.style.display = 'block';
+        controlsContainer.style.display = 'none';
+        fileInput.value = '';
+        originalImage = null;
+        canvas.style.display = 'none';
+        downloadBtn.style.display = 'none';
+      });
+    }
+
+    // Character Counter
+    function initCharCounter() {
+      const textarea = document.getElementById('charcount-textarea');
+      const charCount = document.getElementById('char-count');
+      const wordCount = document.getElementById('word-count');
+      const lineCount = document.getElementById('line-count');
+      const charCountNoSpace = document.getElementById('char-count-no-space');
+      const copyBtn = document.getElementById('copy-text-btn');
+      const clearBtn = document.getElementById('clear-text-btn');
+
+      if (!textarea || !charCount) return;
+
+      function updateCounts() {
+        const text = textarea.value;
+
+        // 文字数
+        charCount.textContent = text.length;
+
+        // 空白なし文字数
+        const noSpaceText = text.replace(/\s/g, '');
+        charCountNoSpace.textContent = noSpaceText.length;
+
+        // 単語数（空白区切り、日本語は文字単位）
+        const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+        wordCount.textContent = words.length || 0;
+
+        // 行数
+        const lines = text.split('\n').length;
+        lineCount.textContent = lines;
+      }
+
+      // リアルタイム更新
+      textarea.addEventListener('input', updateCounts);
+
+      // テキストエリアフォーカス時のスタイル
+      textarea.addEventListener('focus', () => {
+        textarea.style.background = 'white';
+        textarea.style.borderColor = '#e63946';
+        textarea.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+      });
+
+      textarea.addEventListener('blur', () => {
+        textarea.style.background = '#fff5f7';
+        textarea.style.borderColor = '#ffd4dc';
+        textarea.style.boxShadow = 'none';
+      });
+
+      // コピーボタン
+      copyBtn.addEventListener('click', async () => {
+        const text = textarea.value;
+        if (!text) {
+          showError('No text to copy.');
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(text);
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 2000);
+        } catch (err) {
+          showError('Failed to copy.');
+        }
+      });
+
+      // クリアボタン
+      clearBtn.addEventListener('click', () => {
+        textarea.value = '';
+        updateCounts();
+        textarea.focus();
+      });
+
+      // 初期カウント
+      updateCounts();
+    }
+
+    // Image Crop
+    function initImageCrop() {
+      const fileInput = document.getElementById('crop-file-input');
+      const uploadArea = document.getElementById('crop-upload-area');
+      const controlsContainer = document.getElementById('crop-controls-container');
+      const canvas = document.getElementById('crop-canvas');
+      const selection = document.getElementById('crop-selection');
+      const applyBtn = document.getElementById('crop-apply-btn');
+      const downloadBtn = document.getElementById('crop-download-btn');
+      const resetBtn = document.getElementById('crop-reset-btn');
+
+      if (!canvas || !fileInput) return;
+
+      const ctx = canvas.getContext('2d');
+      let originalImage = null;
+      let cropData = { startX: 0, startY: 0, width: 0, height: 0 };
+      let isSelecting = false;
+      let canCrop = true;
+      let mouseDownHandler, mouseMoveHandler, mouseUpHandler;
+
+      // Prevent duplicate initialization
+      if (canvas.dataset.cropInitialized === 'true') return;
+      canvas.dataset.cropInitialized = 'true';
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) loadImage(file);
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          loadImage(file);
+        }
+      });
+
+      function loadImage(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            const maxWidth = 500;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            uploadArea.style.display = 'none';
+            controlsContainer.style.display = 'block';
+            downloadBtn.style.display = 'none';
+            selection.style.display = 'none';
+            canCrop = true;
+            attachCropEvents();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function attachCropEvents() {
+        removeCropEvents();
+
+        mouseDownHandler = (e) => {
+          if (!canCrop) return;
+          const rect = canvas.getBoundingClientRect();
+          cropData.startX = e.clientX - rect.left;
+          cropData.startY = e.clientY - rect.top;
+          isSelecting = true;
+          selection.style.display = 'block';
+        };
+
+        mouseMoveHandler = (e) => {
+          if (!isSelecting || !canCrop) return;
+          const rect = canvas.getBoundingClientRect();
+          const currentX = e.clientX - rect.left;
+          const currentY = e.clientY - rect.top;
+
+          cropData.width = currentX - cropData.startX;
+          cropData.height = currentY - cropData.startY;
+
+          const parent = canvas.parentElement;
+          selection.style.left = Math.min(cropData.startX, currentX) + 'px';
+          selection.style.top = Math.min(cropData.startY, currentY) + 'px';
+          selection.style.width = Math.abs(cropData.width) + 'px';
+          selection.style.height = Math.abs(cropData.height) + 'px';
+        };
+
+        mouseUpHandler = () => {
+          isSelecting = false;
+        };
+
+        canvas.addEventListener('mousedown', mouseDownHandler);
+        canvas.addEventListener('mousemove', mouseMoveHandler);
+        canvas.addEventListener('mouseup', mouseUpHandler);
+      }
+
+      function removeCropEvents() {
+        if (mouseDownHandler) canvas.removeEventListener('mousedown', mouseDownHandler);
+        if (mouseMoveHandler) canvas.removeEventListener('mousemove', mouseMoveHandler);
+        if (mouseUpHandler) canvas.removeEventListener('mouseup', mouseUpHandler);
+      }
+
+      applyBtn.addEventListener('click', () => {
+        if (!originalImage || Math.abs(cropData.width) < 10 || Math.abs(cropData.height) < 10) {
+          showError('Please select a crop area.');
+          return;
+        }
+
+        const scaleX = canvas.width / canvas.getBoundingClientRect().width;
+        const scaleY = canvas.height / canvas.getBoundingClientRect().height;
+
+        const x = Math.min(cropData.startX, cropData.startX + cropData.width) * scaleX;
+        const y = Math.min(cropData.startY, cropData.startY + cropData.height) * scaleY;
+        const w = Math.abs(cropData.width) * scaleX;
+        const h = Math.abs(cropData.height) * scaleY;
+
+        const croppedCanvas = document.createElement('canvas');
+        croppedCanvas.width = w;
+        croppedCanvas.height = h;
+        const croppedCtx = croppedCanvas.getContext('2d');
+
+        croppedCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(croppedCanvas, 0, 0);
+
+        selection.style.display = 'none';
+        canvas.style.cursor = 'default';
+        canCrop = false;
+        removeCropEvents();
+        downloadBtn.style.display = 'block';
+      });
+
+      let isDownloading = false;
+      downloadBtn.addEventListener('click', () => {
+        if (isDownloading) return;
+        isDownloading = true;
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            showError('Failed to export image.');
+            isDownloading = false;
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `cropped_${Date.now()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setTimeout(() => { isDownloading = false; }, 1000);
+        });
+      });
+
+      resetBtn.addEventListener('click', () => {
+        uploadArea.style.display = 'block';
+        controlsContainer.style.display = 'none';
+        fileInput.value = '';
+        originalImage = null;
+        selection.style.display = 'none';
+        downloadBtn.style.display = 'none';
+        canCrop = true;
+        canvas.style.cursor = 'crosshair';
+        removeCropEvents();
+        delete canvas.dataset.cropInitialized;
+      });
+    }
+
+    // ZIP Compress
+    function initZipCompress() {
+      const fileInput = document.getElementById('zip-file-input');
+      const uploadArea = document.getElementById('zip-upload-area');
+      const filesList = document.getElementById('zip-files-list');
+      const fileCount = document.getElementById('zip-file-count');
+      const fileNames = document.getElementById('zip-file-names');
+      const compressBtn = document.getElementById('zip-compress-btn');
+      const resetBtn = document.getElementById('zip-reset-btn');
+
+      if (!fileInput) return;
+
+      let selectedFiles = [];
+
+      fileInput.addEventListener('change', (e) => {
+        selectedFiles = Array.from(e.target.files);
+        displayFiles();
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        selectedFiles = Array.from(e.dataTransfer.files);
+        displayFiles();
+      });
+
+      function displayFiles() {
+        if (selectedFiles.length === 0) return;
+
+        fileCount.textContent = selectedFiles.length;
+        fileNames.innerHTML = selectedFiles.map(f => `• ${f.name}`).join('<br>');
+        uploadArea.style.display = 'none';
+        filesList.style.display = 'block';
+      }
+
+      compressBtn.addEventListener('click', async () => {
+        if (selectedFiles.length === 0) {
+          showError('Please select files to compress.');
+          return;
+        }
+
+        if (typeof JSZip === 'undefined') {
+          showError('ZIP library not loaded. Please refresh the page.');
+          return;
+        }
+
+        try {
+          const zip = new JSZip();
+
+          for (const file of selectedFiles) {
+            zip.file(file.name, file);
+          }
+
+          const blob = await zip.generateAsync({ type: 'blob' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `archive_${Date.now()}.zip`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          showError('Failed to create ZIP file.');
+        }
+      });
+
+      resetBtn.addEventListener('click', () => {
+        uploadArea.style.display = 'block';
+        filesList.style.display = 'none';
+        fileInput.value = '';
+        selectedFiles = [];
+      });
+    }
+
+    // Image Compress
+    function initImageCompress() {
+      const fileInput = document.getElementById('compress-file-input');
+      const uploadArea = document.getElementById('compress-upload-area');
+      const controlsContainer = document.getElementById('compress-controls-container');
+      const canvas = document.getElementById('compress-canvas');
+      const qualitySlider = document.getElementById('compress-quality');
+      const qualityDisplay = document.getElementById('compress-quality-display');
+      const originalSizeSpan = document.getElementById('compress-original-size');
+      const newSizeSpan = document.getElementById('compress-new-size');
+      const applyBtn = document.getElementById('compress-apply-btn');
+      const downloadBtn = document.getElementById('compress-download-btn');
+      const resetBtn = document.getElementById('compress-reset-btn');
+
+      if (!canvas || !fileInput) return;
+
+      const ctx = canvas.getContext('2d');
+      let originalImage = null;
+      let originalFileSize = 0;
+      let compressedBlob = null;
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) loadImage(file);
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          loadImage(file);
+        }
+      });
+
+      function loadImage(file) {
+        originalFileSize = file.size;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            canvas.style.display = 'block';
+
+            originalSizeSpan.textContent = formatFileSize(originalFileSize);
+            uploadArea.style.display = 'none';
+            controlsContainer.style.display = 'block';
+            downloadBtn.style.display = 'none';
+            newSizeSpan.textContent = '-';
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      qualitySlider.addEventListener('input', () => {
+        qualityDisplay.textContent = qualitySlider.value + '%';
+      });
+
+      applyBtn.addEventListener('click', () => {
+        if (!originalImage) return;
+
+        const quality = qualitySlider.value / 100;
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            showError('Failed to compress image.');
+            return;
+          }
+          compressedBlob = blob;
+          newSizeSpan.textContent = formatFileSize(blob.size);
+          downloadBtn.style.display = 'block';
+        }, 'image/jpeg', quality);
+      });
+
+      let isCompressDownloading = false;
+      downloadBtn.addEventListener('click', () => {
+        if (!compressedBlob || isCompressDownloading) return;
+        isCompressDownloading = true;
+
+        const url = URL.createObjectURL(compressedBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `compressed_${Date.now()}.jpg`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setTimeout(() => { isCompressDownloading = false; }, 1000);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        uploadArea.style.display = 'block';
+        controlsContainer.style.display = 'none';
+        fileInput.value = '';
+        originalImage = null;
+        compressedBlob = null;
+        canvas.style.display = 'none';
+        downloadBtn.style.display = 'none';
+        qualitySlider.value = 80;
+        qualityDisplay.textContent = '80%';
+        isCompressDownloading = false;
+      });
+    }
+
+    // Gradient Text Generator
+    function initGradientText() {
+      const form = document.getElementById('gradient-form');
+      if (!form || form.dataset.initialized === 'true') return;
+      form.dataset.initialized = 'true';
+
+      const input = document.getElementById('gradient-text');
+      const startColor = document.getElementById('gradient-start-color');
+      const endColor = document.getElementById('gradient-end-color');
+      const angleInput = document.getElementById('gradient-angle');
+      const preview = document.getElementById('gradient-preview');
+      const cssOutput = document.getElementById('gradient-css');
+      const copyBtn = document.getElementById('gradient-copy');
+
+      function updateGradient() {
+        const text = input.value || 'Gradient Text';
+        const angle = angleInput.value;
+        const gradient = `linear-gradient(${angle}deg, ${startColor.value}, ${endColor.value})`;
+        preview.style.backgroundImage = gradient;
+        preview.textContent = text;
+        cssOutput.value = `background-image: ${gradient};\n-webkit-background-clip: text;\ncolor: transparent;`;
+      }
+
+      input.addEventListener('input', updateGradient);
+      startColor.addEventListener('input', updateGradient);
+      endColor.addEventListener('input', updateGradient);
+      angleInput.addEventListener('input', updateGradient);
+
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(cssOutput.value);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => (copyBtn.textContent = 'Copy CSS'), 2000);
+        } catch (err) {
+          showError('Failed to copy CSS.');
+        }
+      });
+
+      updateGradient();
+    }
+
+    // Rounded Corner Image
+    function initImageRound() {
+      const fileInput = document.getElementById('round-file-input');
+      if (!fileInput || fileInput.dataset.initialized === 'true') return;
+      fileInput.dataset.initialized = 'true';
+
+      const uploadArea = document.getElementById('round-upload-area');
+      const controls = document.getElementById('round-controls');
+      const radiusSlider = document.getElementById('round-radius');
+      const radiusDisplay = document.getElementById('round-radius-value');
+      const previewContainer = document.getElementById('round-preview');
+      const downloadBtn = document.getElementById('round-download-btn');
+      const resetBtn = document.getElementById('round-reset-btn');
+      let originalImage = null;
+      let lastBlobUrl = null;
+
+      function resetState() {
+        uploadArea.style.display = 'block';
+        controls.style.display = 'none';
+        downloadBtn.style.display = 'none';
+        previewContainer.innerHTML = '';
+        fileInput.value = '';
+        originalImage = null;
+        if (lastBlobUrl) {
+          URL.revokeObjectURL(lastBlobUrl);
+          lastBlobUrl = null;
+        }
+      }
+
+      function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            uploadArea.style.display = 'none';
+            controls.style.display = 'block';
+            radiusSlider.value = 25;
+            radiusDisplay.textContent = '25px';
+            renderPreview();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function renderPreview() {
+        if (!originalImage) return;
+        const radius = parseInt(radiusSlider.value, 10);
+        radiusDisplay.textContent = `${radius}px`;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height;
+        const ctx = canvas.getContext('2d');
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        drawRoundedRect(ctx, 0, 0, canvas.width, canvas.height, radius);
+        ctx.clip();
+        ctx.drawImage(originalImage, 0, 0);
+        ctx.restore();
+
+        const imgPreview = new Image();
+        if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            showError('Failed to generate preview.');
+            return;
+          }
+          lastBlobUrl = URL.createObjectURL(blob);
+          imgPreview.src = lastBlobUrl;
+          previewContainer.innerHTML = '';
+          imgPreview.style.maxWidth = '100%';
+          imgPreview.style.borderRadius = '12px';
+          previewContainer.appendChild(imgPreview);
+          downloadBtn.style.display = 'inline-flex';
+        });
+      }
+
+      function drawRoundedRect(ctx, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + width - r, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+        ctx.lineTo(x + width, y + height - r);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+        ctx.lineTo(x + r, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      radiusSlider.addEventListener('input', renderPreview);
+
+      downloadBtn.addEventListener('click', () => {
+        if (!lastBlobUrl) return;
+        const link = document.createElement('a');
+        link.href = lastBlobUrl;
+        link.download = `rounded_${Date.now()}.png`;
+        link.click();
+      });
+
+      resetBtn.addEventListener('click', resetState);
+    }
+
+    // WebP Converter
+    function initWebpConverter() {
+      const fileInput = document.getElementById('webp-file-input');
+      if (!fileInput || fileInput.dataset.initialized === 'true') return;
+      fileInput.dataset.initialized = 'true';
+
+      const uploadArea = document.getElementById('webp-upload-area');
+      const controls = document.getElementById('webp-controls');
+      const preview = document.getElementById('webp-preview');
+      const downloadBtn = document.getElementById('webp-download-btn');
+      const resetBtn = document.getElementById('webp-reset-btn');
+      const qualitySlider = document.getElementById('webp-quality');
+      const qualityValue = document.getElementById('webp-quality-value');
+      let originalImage = null;
+      let convertedBlobUrl = null;
+
+      function resetState() {
+        uploadArea.style.display = 'block';
+        controls.style.display = 'none';
+        preview.innerHTML = '';
+        downloadBtn.style.display = 'none';
+        fileInput.value = '';
+        originalImage = null;
+        if (convertedBlobUrl) {
+          URL.revokeObjectURL(convertedBlobUrl);
+          convertedBlobUrl = null;
+        }
+      }
+
+      function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            originalImage = img;
+            uploadArea.style.display = 'none';
+            controls.style.display = 'block';
+            qualitySlider.value = 90;
+            qualityValue.textContent = '90%';
+            renderPreview();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function renderPreview() {
+        if (!originalImage) return;
+        qualityValue.textContent = `${qualitySlider.value}%`;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(originalImage, 0, 0);
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            showError('Failed to convert to WebP.');
+            return;
+          }
+          if (convertedBlobUrl) URL.revokeObjectURL(convertedBlobUrl);
+          convertedBlobUrl = URL.createObjectURL(blob);
+          preview.innerHTML = '';
+          const imgElement = new Image();
+          imgElement.src = convertedBlobUrl;
+          imgElement.style.maxWidth = '100%';
+          imgElement.style.borderRadius = '12px';
+          preview.appendChild(imgElement);
+          downloadBtn.style.display = 'inline-flex';
+        }, 'image/webp', qualitySlider.value / 100);
+      }
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      qualitySlider.addEventListener('input', renderPreview);
+
+      downloadBtn.addEventListener('click', () => {
+        if (!convertedBlobUrl) return;
+        const link = document.createElement('a');
+        link.href = convertedBlobUrl;
+        link.download = `converted_${Date.now()}.webp`;
+        link.click();
+      });
+
+      resetBtn.addEventListener('click', resetState);
+    }
+
+    // QR Code Reader
+    function initQrReader() {
+      const fileInput = document.getElementById('qrreader-file-input');
+      if (!fileInput || fileInput.dataset.initialized === 'true') return;
+      fileInput.dataset.initialized = 'true';
+
+      const uploadArea = document.getElementById('qrreader-upload-area');
+      const resultText = document.getElementById('qrreader-result');
+      const preview = document.getElementById('qrreader-preview');
+      const copyBtn = document.getElementById('qrreader-copy');
+      const resetBtn = document.getElementById('qrreader-reset');
+      const canvas = document.getElementById('qrreader-canvas');
+      const ctx = canvas.getContext('2d');
+
+      function resetState() {
+        uploadArea.style.display = 'block';
+        preview.style.display = 'none';
+        resultText.textContent = 'No data detected yet.';
+        fileInput.value = '';
+      }
+
+      async function decodeImage(img) {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+          resultText.textContent = code.data;
+          copyBtn.style.display = 'inline-flex';
+        } else {
+          resultText.textContent = 'No QR code detected. Try another image.';
+          copyBtn.style.display = 'none';
+        }
+      }
+
+      function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = async () => {
+            uploadArea.style.display = 'none';
+            preview.style.display = 'block';
+            preview.src = e.target.result;
+            await decodeImage(img);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#e63946';
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '#ffd4dc';
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#ffd4dc';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFile(file);
+        }
+      });
+
+      copyBtn.addEventListener('click', async () => {
+        const text = resultText.textContent;
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => (copyBtn.textContent = 'Copy Result'), 2000);
+        } catch (err) {
+          showError('Failed to copy result.');
+        }
+      });
+
+      resetBtn.addEventListener('click', resetState);
+    }
+
+    // Video to GIF (client-side placeholder)
+    function initVideoGif() {
+      const form = document.getElementById('videogif-form');
+      if (!form || form.dataset.initialized === 'true') return;
+      form.dataset.initialized = 'true';
+
+      const fileInput = document.getElementById('videogif-file');
+      const statusText = document.getElementById('videogif-status');
+      const downloadBtn = document.getElementById('videogif-download');
+      const resetBtn = document.getElementById('videogif-reset');
+
+      let gifBlobUrl = null;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const file = fileInput.files[0];
+        if (!file) {
+          showError('Please select a video file.');
+          return;
+        }
+        statusText.textContent = 'Converting to GIF... (simulated)';
+        downloadBtn.style.display = 'none';
+
+        setTimeout(() => {
+          const blob = new Blob(['GIF89a'], { type: 'image/gif' });
+          if (gifBlobUrl) URL.revokeObjectURL(gifBlobUrl);
+          gifBlobUrl = URL.createObjectURL(blob);
+          statusText.textContent = 'Conversion complete! (placeholder GIF)';
+          downloadBtn.style.display = 'inline-flex';
+        }, 1500);
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        if (!gifBlobUrl) return;
+        const link = document.createElement('a');
+        link.href = gifBlobUrl;
+        link.download = `converted_${Date.now()}.gif`;
+        link.click();
+      });
+
+      resetBtn.addEventListener('click', () => {
+        if (gifBlobUrl) {
+          URL.revokeObjectURL(gifBlobUrl);
+          gifBlobUrl = null;
+        }
+        fileInput.value = '';
+        statusText.textContent = 'Upload a video to convert it into a GIF.';
+        downloadBtn.style.display = 'none';
+      });
+    }
+
+    // YouTube Thumbnail Downloader
+    function initYoutubeThumb() {
+      const form = document.getElementById('youtubethumb-form');
+      if (!form || form.dataset.initialized === 'true') return;
+      form.dataset.initialized = 'true';
+
+      const input = document.getElementById('youtubethumb-url');
+      const preview = document.getElementById('youtubethumb-preview');
+      const downloadBtn = document.getElementById('youtubethumb-download');
+      const resetBtn = document.getElementById('youtubethumb-reset');
+      let thumbnailUrl = '';
+
+      function extractVideoId(url) {
+        const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|\S*?[?&]v=)|youtu\.be\/)([\w-]{11})/;
+        const match = url.match(regex);
+        return match ? match[1] : null;
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const value = input.value.trim();
+        const videoId = extractVideoId(value);
+        if (!videoId) {
+          showError('Please enter a valid YouTube URL.');
+          return;
+        }
+        thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        preview.src = thumbnailUrl;
+        preview.style.display = 'block';
+        downloadBtn.style.display = 'inline-flex';
+      });
+
+      downloadBtn.addEventListener('click', () => {
+        if (!thumbnailUrl) return;
+        const link = document.createElement('a');
+        link.href = thumbnailUrl;
+        link.download = `youtube_thumbnail_${Date.now()}.jpg`;
+        link.click();
+      });
+
+      resetBtn.addEventListener('click', () => {
+        input.value = '';
+        preview.style.display = 'none';
+        preview.src = '';
+        thumbnailUrl = '';
+        downloadBtn.style.display = 'none';
+      });
+    }
   </script>
 </body>
 </html>
-
